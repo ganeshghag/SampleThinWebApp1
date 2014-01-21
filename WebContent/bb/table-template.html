@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+
+</head>
+<body>
+
+	<div id="container">Loading....</div>
+	<p></p>
+	<div id="container-child">Loading....</div>
+
+
+
+	<script
+		src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"
+		type="text/javascript"></script>
+	<script
+		src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.3.3/underscore-min.js"
+		type="text/javascript"></script>
+	<script
+		src="http://cdnjs.cloudflare.com/ajax/libs/backbone.js/0.9.2/backbone-min.js"
+		type="text/javascript"></script>
+	<script
+		src="http://cdnjs.cloudflare.com/ajax/libs/backbone-localstorage.js/1.0/backbone.localStorage-min.js"
+		type="text/javascript"></script>
+
+
+
+	<script type="text/template" id="page1">
+      <div class="view">
+        <h2>Page 1 from </h2>
+<table width="100%" border="2">
+<tr><th>First Name</th><th>Last Name</th><th>Address</th><th>Telephone</th><th>Birth Date</th></tr>
+<% 
+_.each(collection, function(row) { 
+console.log('some'+JSON.stringify(row));
+%>
+
+<tr><td><%=row.firstName%></td><td><%=row.lastName%></td><td><%=row.address%></td><td><%=row.telephoneNumber%></td><td><%=row.dateOfBirth%></td></tr>
+<%
+});
+
+%>
+
+</table>
+		
+		<a href="#page2">Goto Page 2</a>
+		<p></p>
+		<input type='text' value='some text goes here'/>
+		<input type='button' value='Show Page 3 View' />
+		<hr>
+		<div id="pager"></div> 
+
+      </div>
+    </script>
+
+	<script type="text/template" id="page2">
+      <div class="view">
+        <h2>Page 2 from <%= who %></h2>
+		<a href="#page1">Goto Page 1</a>
+		<p></p>
+		<input type='text' value='some text goes here'/>
+      </div>
+	</script>
+
+	<script type="text/template" id="page3">
+      <div class="view">
+        <h2>Page 3 from <%= who %></h2>
+      </div>
+	</script>
+
+	<script type="text/javascript">
+	var myGroup;
+	var Person = Backbone.Model.extend({
+        defaults: {
+            partyId: "101",
+            firstName: "DefaultGanesh",
+            lastName: "Ghag",
+            address: "304 Flower Valley",
+            dateOfBirth:"1 Sep 1973",
+            telephoneNumber:"73284748"
+        },
+        initialize: function(){
+            console.log("Music is the answer");
+        }
+    });
+
+    var Group = Backbone.Collection.extend({
+        model: Person,
+        localStorage: new Store('person-store')
+    });
+    
+   
+	myGroup = new Group();
+    myGroup.add(new Person());
+    myGroup.add(new Person());
+    myGroup.add(new Person());
+    
+    
+	console.log('fetch'+JSON.stringify(myGroup));
+	
+	
+		var AppViewPage1 = Backbone.View.extend({
+			el : $('#container'),
+			template : _.template($('#page1').html()),
+			initialize : function() {
+				console.log('from init-'+JSON.stringify(myGroup));
+				this.render();
+			},
+			render : function() {
+			    
+				console.log('from render-'+JSON.stringify(myGroup));
+				this.$el.html(this.template({
+					collection : myGroup.toJSON()
+				}));
+			},
+			events : {
+				"click input[type=button]" : "showNewView"
+			},
+			showNewView : function(event) {
+				console.log('showing new view');
+				var appView3 = new AppViewPage3();
+			}
+		});
+
+		var AppViewPage2 = Backbone.View.extend({
+			el : $('#container'),
+			template : _.template($('#page2').html()),
+			initialize : function() {
+				this.render();
+			},
+			render : function() {
+
+				this.$el.html(this.template({
+					who : 'Ganesh Ghag'
+				}));
+			}
+		});
+
+		var AppViewPage3 = Backbone.View.extend({
+			el : $('#container-child'),
+			template : _.template($('#page3').html()),
+			initialize : function() {
+				this.render();
+			},
+			render : function() {
+
+				this.$el.html(this.template({
+					who : 'Ganesh Ghag Child Page'
+				}));
+			}
+		});
+
+		var appView1 = null;
+		var appView2 = null;
+		var AppRouter = Backbone.Router.extend({
+
+			routes : {
+				"" : "showPage1",
+				"page1" : "showPage1",
+				"page2" : "showPage2",
+				"page3" : "showPage3"
+			},
+
+			showPage1 : function() {
+				console.log('from inside showpage1()');
+				if (appView1 === null)
+					appView1 = new AppViewPage1();
+				else {
+					console.log('appView1 is not null so just doing render');
+					appView1.render();
+				}
+			},
+			showPage2 : function() {
+				console.log('from inside showpage2()');
+				if (appView2 === null)
+					appView2 = new AppViewPage2();
+				else {
+					console.log('appView2 is not null so just doing render');
+					appView2.render();
+				}
+			},
+			showPage3 : function() {
+				console.log('from inside showpage3()');
+				var appView3 = new AppViewPage3();
+			}
+
+		});
+
+		var appRouter = new AppRouter();
+		Backbone.history.start();
+		
+		
+	    
+		
+	</script>
+	
+</body>
+</html>
+
+
+
